@@ -1,0 +1,13 @@
+%form{:action => '/admin/#{link}', :method => 'post'}
+  %p
+    %label{:for => '#{var}_name'}
+      Name:
+    %input{:type => 'text', :size => 20, :id => '#{var}', :name => '#{var}[name]'}
+    %br
+    %label{:for => '#{var}_description'}
+      Description:
+    %br
+    %textarea{:cols => 40, :rows => 5, :id => '#{var}_description', :name => '#{var}[description]'}
+    %br
+    %input{:type => 'submit', :value => 'Oouh!'}
+    

@@ -1,0 +1,8 @@
+%h3
+  Current Species
+
+%p
+  = @druhs.each do |druh|
+    = druh.name.capitalize
+    (subfamily #{druh.gen.subfam.name.capitalize}, genus #{druh.gen.name.capitalize})
+    %br
