@@ -1,4 +1,14 @@
 %h3
   New Species
 
-= partial :"admin/partials/_new_edit", :link => @link, :var => @var, :edit => false
+%form{:id => 'gen_form', :method => 'post'}
+  Subfamily:
+  %span#subfam
+    %select{:id => 'subfam_select', :name => 'subfam_select'}
+      = options_for_select(1, get_subfamilies)
+  Genus:
+  %span#gen
+    = haml_partial "partials/_genus", :locals => { :subfam => 1 }
+
+= haml_partial "admin/partials/_new_edit", :locals => { :link => @link, :var => @var, :edit => false }
+

@@ -6,10 +6,16 @@ require 'haml'
 require 'dm-mysql-adapter'
 require 'rack-flash'
 
+require 'sinatra/reloader' if development?
+
 enable :sessions
 use Rack::Flash
 
 configure do
+  set :app_file, __FILE__
+  set :root, File.dirname(__FILE__)
+  set :static, :true
+  set :public, Proc.new { File.join(root, "public") }
   LOGGER = Logger.new("mustelid.log") 
 end
  
@@ -93,6 +99,20 @@ post '/admin/*' do
   link = params['splat'][0]
   var = link_assoc[link]
   model = Object::const_get(var.capitalize).new
+
+  params.each { |p|
+    logger.info p
+  }
+
+  if var == "druh"
+    gen = Gen.get(params['druh'].delete("gen_id").to_i)
+    gen.druhs << model
+  end
+  if var == "gen"
+    subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
+    subfam.gens << model
+  end
+
   model.attributes = params[var]
   unless model.save
     flash[:notice] = unroll(model.errors)
@@ -101,6 +121,12 @@ post '/admin/*' do
     flash[:notice] = "Created!"
     redirect "/admin/#{link}"
   end
+end
+
+# Ajax routes
+
+get '/ajax/changeGenus/:subfam' do
+  haml :"partials/_genus", :locals => { :subfam => params['subfam'] }, :layout => false
 end
 
 # Helpers
@@ -115,26 +141,58 @@ helpers do
   end
 end
 
-# Render the page once:
-# Usage: partial :foo
-# 
-# foo will be rendered once for each element in the array, passing in a local variable named "foo"
-# Usage: partial :foo, :collection => @my_foos    
-
 helpers do
-  def partial(template, *args)
-    options = args.extract_options!
-    options.merge!(:layout => false)
-    if collection = options.delete(:collection) then
-      collection.inject([]) do |buffer, member|
-        buffer << haml(template, options.merge(
-                                  :layout => false, 
-                                               :locals => {template.to_sym => member}
-                                )
-                     )
-      end.join("\n")
+  def haml_partial(name, options = {})
+    item_name = name.to_sym
+    counter_name = "#{name}_counter".to_sym
+    if collection = options.delete(:collection)
+      collection.enum_for(:each_with_index).collect do |item,index|
+        haml_partial name, options.merge(:locals => {item_name => item, counter_name => index+1})
+      end.join
+    elsif object = options.delete(:object)
+      haml_partial name, options.merge(:locals => {item_name => object, counter_name => nil})
     else
-      haml(template, options)
+      haml "#{name}".to_sym, options.merge(:layout => false)
+    end
+  end
+end
+
+# options is an array of [value, text] entries for options.
+helpers do
+  def options_for_select(selected, options)
+    options.sort.inject([]) { |opts, opt|
+      opts << ("<option value=\"#{opt[0]}\"" + (opt[0] == selected ? " selected=\"true\"" : "") + ">#{opt[1]}</option>")
+    }.join
+  end
+end
+
+# These are all for making options collections.
+helpers do
+  def extract_id_name(objs)
+    objs.inject([]) { |kvs, obj|
+      kvs << [ obj.id, obj.name ]
+    }
+  end
+
+  def get_subfamilies
+    extract_id_name(Subfam.all)
+  end
+
+  def get_genuses(subfam_id = nil)
+    if subfam_id.nil?
+      logger.info "subfam_id is nil"
+      extract_id_name(Gen.all)
+    else
+      logger.info "subfam_id: " + subfam_id.to_s
+      extract_id_name(Subfam.get(subfam_id).gens)
+    end
+  end
+
+  def get_species(gen_id = nil)
+    if gen_id.nil?
+      extract_id_name(Druh.all)
+    else
+      extract_id_name(Druh.all(:gen_id => gen_id))
     end
   end
 end
