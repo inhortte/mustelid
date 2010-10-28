@@ -6,8 +6,12 @@
       Mustelids
     %link{:type => "text/css", :rel => "stylesheet", :href => "/mustelid.css"}
     %script{:type => "text/javascript", :src => "/javascript/jquery.js"}
-    %script{:type => "text/javascript", :src => "/javascript/mustelids.js"}
-
+    :javascript
+      $(document).ready(function() {
+        $("#headmustelid img").fadeIn("slow");
+        $("h5").prepend("(").append(")");
+      });
+      
   %body
     %div#header
       %div#titles
@@ -19,7 +23,7 @@
             %a{:href => "#"}
               Browse
           %li
-            %a{:href => "/admin/subfamily"}
+            %a{:href => "#"}
               Admin
         %h5#pagetitle
           the mustelid website
@@ -31,14 +35,6 @@
     %br.clear
 
     %div#hlavni
-      %div#vlevo
-        Sidebar
-
-      %div#vpravo
-        %p
-          %pre
-            = flash[:notice]
-        %p
-          = yield
+      %p
+        here come the mustelids!
     
-      %br.clear

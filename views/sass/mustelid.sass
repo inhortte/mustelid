@@ -1,0 +1,123 @@
+$fontFamily: verdana, arial, helvetica, sans-serif
+$fontSize: 12px
+$lineHeight: 15px
+$bodyBackgroundColor: #fff
+$bodyTextColor: #333
+$mainBackgroundColor: #ccc
+$mainTextColor: #000
+$headerWidth: 950px
+$mainWidth: 800px
+$leftWidth: 20%
+$rightWidth: 75%
+$leftBackgroundColor: #99c
+
+body
+  :background
+    :color $bodyBackgroundColor
+  :color $bodyTextColor
+  :font
+    :family $fontFamily
+    :size $fontSize
+  :line-height $lineHeight
+
+#header
+  :width $headerWidth
+  :margin
+    :left auto
+    :right auto
+    :bottom 20px
+    :top 20px
+
+  #titles
+    :float left
+
+    #pagetitle, #pagesubtitle
+      :padding
+        :left 5px
+    
+  #headmustelid
+    :float right
+
+#hlavni
+  :background
+    :color $mainBackgroundColor
+  :color $bodyTextColor
+  :margin
+    :right auto
+    :left auto
+    :top 0px
+  :width $mainWidth
+  :border 1px solid #000
+  :padding 10px
+
+  #vlevo
+    :width $leftWidth
+    :float left
+    :padding 5px 5px 5px 5px
+    :background
+      :color $leftBackgroundColor
+
+  #vpravo
+    :width $rightWidth
+    :float right
+    :padding 5px 5px 5px 5px
+
+// general
+
+h5
+  :margin 0
+  :padding 0
+
+img
+  :border 0px
+
+.clear
+  :clear both
+
+// tabs
+
+.basictab
+  :padding 3px 0px
+  :margin
+    :left 0px
+  // font bold 12px Verdana;
+  :border
+    :bottom 1px solid gray
+  :list-style-type none
+  // set to left, center, or right to align the menu as desired
+  :text-align left 
+
+  li
+    :display inline
+    :margin 0
+
+    a
+      :text-decoration none
+      :padding 3px 7px
+      :margin
+        :right 0px
+      :border
+        :top 1px solid gray
+        :right 1px solid gray
+        :left 1px solid gray
+        :bottom 1px solid gray
+      :background-color #f6ffd5
+      :color #2d2b2b
+
+      &:visited
+        :color #2d2b2b
+      &:hover
+        :background-color #dbff6c
+        :color black
+      &:active
+        :color black
+    
+    .selected
+      a
+        :position relative
+        :top 1px
+        :padding
+          :top 4px
+        :background-color #dbff6c
+        :color black
+

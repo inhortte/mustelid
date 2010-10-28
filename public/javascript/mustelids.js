@@ -4,7 +4,8 @@ link_assoc["genus"] = "gen";
 link_assoc["species"] = "druh";
 
 $(document).ready(function() {
-    $("h1").css("color", "#b00");
+    $("#headmustelid img").fadeIn("slow");
+    $("h5").prepend("(").append(")");
 
     // Select boxes change -> ajax functions.
     $("#subfam_select").change(function() {

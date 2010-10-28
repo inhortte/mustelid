@@ -3,6 +3,7 @@ require 'sinatra'
 require 'logger'
 require 'datamapper'
 require 'haml'
+require 'sass'
 require 'dm-mysql-adapter'
 require 'rack-flash'
 
@@ -77,6 +78,13 @@ class DruhImg
   belongs_to :druh
 end
 
+# Routes
+
+get '/mustelid.css' do
+  headers 'Content-Type' => 'text/css; charset=utf-8'
+  sass :"sass/mustelid"
+end
+
 get '/admin/*/new' do
   @link = params['splat'][0]
   @var = link_assoc[params['splat'][0]]
@@ -127,6 +135,12 @@ end
 
 get '/ajax/changeGenus/:subfam' do
   haml :"partials/_genus", :locals => { :subfam => params['subfam'] }, :layout => false
+end
+
+# Mockup
+
+get '/mock/:file' do
+  haml :"mock/#{params['file']}", :layout => false
 end
 
 # Helpers
