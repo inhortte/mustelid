@@ -11,6 +11,44 @@ require 'sinatra/reloader' if development?
 
 enable :sessions
 use Rack::Flash
+use Rack::MethodOverride # for DELETE and PUT.
+
+# This should be moved to another file.
+
+module Sinatra
+  module BeforeOnlyFilter
+    def before_only(routes, &block)
+      before do
+        routes.map! { |r|
+          r = r.gsub(/\*/, '\w+')
+          r.rsub(/\//, '\/')
+        }
+        if routes.any? { |r|
+            !(request.path =~ /^#{r}$/).nil?
+          }
+          instance_eval(&block)
+        end
+      end
+    end
+
+    def before_only_re(re, &block)
+      before do
+        logger.info "RE: #{re}"
+        m = /^#{re}$/.match(request.path)
+        unless m.nil?
+          m = m.to_a
+          m.shift
+          params[:capture] = m
+          instance_eval(&block)
+        end
+      end
+    end
+  end
+
+  register BeforeOnlyFilter
+end
+
+# End what needs to be in another file.
 
 configure do
   set :app_file, __FILE__
@@ -78,6 +116,23 @@ class DruhImg
   belongs_to :druh
 end
 
+# Filters
+
+=begin
+before do
+  section = request.path_info.split("/")[1]
+  unless section.nil?
+    @sidebar = "_" + section + "_sidebar"
+  end
+  logger.info @sidebar
+end
+=end
+
+before_only_re '\/(home|admin|browse)\/.+' do
+  @sidebar = "_" + params[:capture][0] + "_sidebar"
+  logger.info @sidebar
+end
+
 # Routes
 
 get '/mustelid.css' do
@@ -108,9 +163,9 @@ post '/admin/*' do
   var = link_assoc[link]
   model = Object::const_get(var.capitalize).new
 
-  params.each { |p|
-    logger.info p
-  }
+#  params.each { |p|
+#    logger.info p
+#  }
 
   if var == "druh"
     gen = Gen.get(params['druh'].delete("gen_id").to_i)
@@ -194,10 +249,8 @@ helpers do
 
   def get_genuses(subfam_id = nil)
     if subfam_id.nil?
-      logger.info "subfam_id is nil"
       extract_id_name(Gen.all)
     else
-      logger.info "subfam_id: " + subfam_id.to_s
       extract_id_name(Subfam.get(subfam_id).gens)
     end
   end

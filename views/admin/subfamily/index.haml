@@ -1,7 +1,22 @@
 %h3
   Current Subfamilies
 
-%p
-  = @subfams.each do |subfam|
-    = subfam.name.capitalize
-    %br
+#latin_list
+  - @subfams.each_index do |i|
+    - eyelink = sprintf('%02d', i)
+    .line
+      .entry{:id => "e#{eyelink}"}
+        = @subfams[i].name.capitalize
+      .controls
+        %form.inline{:action => "/admin/subfamily/#{i}", :method => "post"}
+          %input{:type => "hidden", :name => "_method", :value => "put"}
+          (
+          %a{:id => "edit#{eyelink}", :href => "#"}
+            edit
+          ) 
+        %form.inline{:action => "/admin/subfamily/#{i}", :method => "delete"}
+          %input{:type => "hidden", :name => "_method", :value => "delete"}
+          (
+          %a{:id => "delete#{eyelink}", :href => "#"}
+            delete
+          )

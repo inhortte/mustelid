@@ -1,4 +1,4 @@
-$fontFamily: verdana, arial, helvetica, sans-serif
+$fontFamily: "verdana, arial, helvetica, sans-serif"
 $fontSize: 12px
 $lineHeight: 15px
 $bodyBackgroundColor: #fff
@@ -56,11 +56,29 @@ body
     :padding 5px 5px 5px 5px
     :background
       :color $leftBackgroundColor
+      
+    #sidebar
+      p
+        :clear both
+        :font smaller
+        a.all
+          :float left
+        a.new
+          :float right
+          :color red
 
   #vpravo
     :width $rightWidth
     :float right
     :padding 5px 5px 5px 5px
+
+    #latin_list
+      .line
+        :clear both
+        .entry
+          :float left
+        .controls
+          :float right
 
 // general
 
@@ -71,8 +89,17 @@ h5
 img
   :border 0px
 
+a
+  :text-decoration none
+
+  &:hover
+    :text-decoration underline
+
 .clear
   :clear both
+
+.inline
+  :display inline
 
 // tabs
 

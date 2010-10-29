@@ -14,6 +14,7 @@ $(document).ready(function() {
     });
 
     // Admin form submits.
+    // First, for new entries.
     $("#admin_button").click(function() {
 	var prefix = link_assoc[$("#admin_form").attr("action").split("/").pop()];
 	if(prefix == "gen") {
@@ -23,6 +24,11 @@ $(document).ready(function() {
 	    $("#" + prefix + "_gen_id").val($("#gen_select").val());
 	}
 	$("#admin_form").submit();
+    });
+    // Now, for the edit and delete links.
+    $("form > a[id^='edit'],form > a[id^='delete']").click(function() {
+	alert("About to submit!");
+	$(this).parent().submit();
     });
 });
 
