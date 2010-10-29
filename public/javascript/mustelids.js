@@ -25,9 +25,19 @@ $(document).ready(function() {
 	}
 	$("#admin_form").submit();
     });
+    // Secondly, for showing and hiding blocks of substrata.
+    $("#latin_list > .line > .entry > a").click(function() {
+	$(this).siblings("ul").each(function () {
+	    if($(this).hasClass("none")) {
+		$(this).removeClass("none");
+	    } else {
+		$(this).addClass("none");
+	    }
+	});
+    });
     // Now, for the edit and delete links.
     $("form > a[id^='edit'],form > a[id^='delete']").click(function() {
-	alert("About to submit!");
+	alert($(this).parent().attr("action"));
 	$(this).parent().submit();
     });
 });

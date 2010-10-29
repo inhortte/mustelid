@@ -1,0 +1,13 @@
+.controls
+  %form.inline{:action => "/admin/#{link}/#{id}", :method => "post"}
+    %input{:type => "hidden", :name => "_method", :value => "put"}
+    (
+    %a{:id => "edit#{eyelink}", :href => "#"}
+      edit
+    ) 
+  %form.inline{:action => "/admin/#{link}/#{id}", :method => "post"}
+    %input{:type => "hidden", :name => "_method", :value => "delete"}
+    (
+    %a{:id => "delete#{eyelink}", :href => "#"}
+      delete
+    )

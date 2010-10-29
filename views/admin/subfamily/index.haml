@@ -3,20 +3,13 @@
 
 #latin_list
   - @subfams.each_index do |i|
-    - eyelink = sprintf('%02d', i)
+    - eyelink = sprintf('%02d', @subfams[i].id)
     .line
       .entry{:id => "e#{eyelink}"}
-        = @subfams[i].name.capitalize
-      .controls
-        %form.inline{:action => "/admin/subfamily/#{i}", :method => "post"}
-          %input{:type => "hidden", :name => "_method", :value => "put"}
-          (
-          %a{:id => "edit#{eyelink}", :href => "#"}
-            edit
-          ) 
-        %form.inline{:action => "/admin/subfamily/#{i}", :method => "delete"}
-          %input{:type => "hidden", :name => "_method", :value => "delete"}
-          (
-          %a{:id => "delete#{eyelink}", :href => "#"}
-            delete
-          )
+        %a{:href => "#"}
+          = @subfams[i].name.capitalize
+        %ul.none
+          - @subfams[i].gens.each do |g|
+            %li.subentry
+              = g.name.capitalize
+      = haml_partial "admin/partials/_controls", :locals => { :link => 'subfamily', :id => eyelink.to_i, :eyelink => eyelink }

@@ -1,8 +1,16 @@
 %h3
   Current Genuses
 
-%p
-  = @gens.each do |gen|
-    = gen.name.capitalize
-    (subfamily #{gen.subfam.name.capitalize})
-    %br
+#latin_list
+  - @gens.each_index do |i|
+    - eyelink = sprintf('%02d', @gens[i].id)
+    .line
+      .entry{:id => "e#{eyelink}"}
+        = @gens[i].subfam.name.capitalize
+        %a{:href => "#"}
+          = @gens[i].name.capitalize
+        %ul.none
+          - @gens[i].druhs.each do |d|
+            %li.subentry
+              = d.name.capitalize
+      = haml_partial "admin/partials/_controls", :locals => { :link => 'genus', :id => eyelink.to_i, :eyelink => eyelink }

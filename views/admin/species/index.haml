@@ -1,8 +1,13 @@
 %h3
   Current Species
 
-%p
-  = @druhs.each do |druh|
-    = druh.name.capitalize
-    (subfamily #{druh.gen.subfam.name.capitalize}, genus #{druh.gen.name.capitalize})
-    %br
+#latin_list
+  - @druhs.each_index do |i|
+    - eyelink = sprintf('%02d', @druhs[i].id)
+    .line
+      .entry{:id => "e#{eyelink}"}
+        = @druhs[i].gen.subfam.name.capitalize        
+        = @druhs[i].gen.name.capitalize
+        %a{:href => "#"}
+          = @druhs[i].name.capitalize
+      = haml_partial "admin/partials/_controls", :locals => { :link => 'species', :id => eyelink.to_i, :eyelink => eyelink }

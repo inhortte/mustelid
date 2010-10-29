@@ -35,9 +35,8 @@
         = haml_partial "partials/#{@sidebar}"
 
       %div#vpravo
-        %p
-          %pre
-            = flash[:notice]
+        %p.flash
+          = flash[:notice]
         %p
           = yield
     

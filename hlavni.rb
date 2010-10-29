@@ -8,47 +8,11 @@ require 'dm-mysql-adapter'
 require 'rack-flash'
 
 require 'sinatra/reloader' if development?
+require 'modules/before_only.rb'
 
 enable :sessions
 use Rack::Flash
 use Rack::MethodOverride # for DELETE and PUT.
-
-# This should be moved to another file.
-
-module Sinatra
-  module BeforeOnlyFilter
-    def before_only(routes, &block)
-      before do
-        routes.map! { |r|
-          r = r.gsub(/\*/, '\w+')
-          r.rsub(/\//, '\/')
-        }
-        if routes.any? { |r|
-            !(request.path =~ /^#{r}$/).nil?
-          }
-          instance_eval(&block)
-        end
-      end
-    end
-
-    def before_only_re(re, &block)
-      before do
-        logger.info "RE: #{re}"
-        m = /^#{re}$/.match(request.path)
-        unless m.nil?
-          m = m.to_a
-          m.shift
-          params[:capture] = m
-          instance_eval(&block)
-        end
-      end
-    end
-  end
-
-  register BeforeOnlyFilter
-end
-
-# End what needs to be in another file.
 
 configure do
   set :app_file, __FILE__
@@ -118,19 +82,8 @@ end
 
 # Filters
 
-=begin
-before do
-  section = request.path_info.split("/")[1]
-  unless section.nil?
-    @sidebar = "_" + section + "_sidebar"
-  end
-  logger.info @sidebar
-end
-=end
-
 before_only_re '\/(home|admin|browse)\/.+' do
   @sidebar = "_" + params[:capture][0] + "_sidebar"
-  logger.info @sidebar
 end
 
 # Routes
@@ -162,11 +115,6 @@ post '/admin/*' do
   link = params['splat'][0]
   var = link_assoc[link]
   model = Object::const_get(var.capitalize).new
-
-#  params.each { |p|
-#    logger.info p
-#  }
-
   if var == "druh"
     gen = Gen.get(params['druh'].delete("gen_id").to_i)
     gen.druhs << model
@@ -184,6 +132,16 @@ post '/admin/*' do
     flash[:notice] = "Created!"
     redirect "/admin/#{link}"
   end
+end
+
+delete '/admin/*/:id' do
+  link = params['splat'][0]
+  var = link_assoc[link]
+  logger.info "delete ... link: #{link}  var: #{var}  id: #{params['id']}"
+  deleted = Object::const_get(var.capitalize).get(params['id'].to_i).destroy
+#  eval("deleted = #{var.capitalize}.first(params['id']).destroy")
+  flash[:notice] = deleted ? "Deleted!" : "Deletion failed."
+  redirect "/admin/#{link}"
 end
 
 # Ajax routes
