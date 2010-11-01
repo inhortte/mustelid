@@ -52,7 +52,7 @@ class Gen
   property :updated_at, DateTime
 
   has n, :druhs
-  belongs_to :subfam
+  belongs_to :subfam, :required => false
 end
 
 class Druh # Species (in Czech, since 'Spec' is not good)
@@ -66,7 +66,7 @@ class Druh # Species (in Czech, since 'Spec' is not good)
   property :updated_at, DateTime
 
   has n, :druh_imgs
-  belongs_to :gen
+  belongs_to :gen, :required => false
 end
 
 class DruhImg
@@ -113,7 +113,7 @@ get '/admin/*' do
   haml :"admin/#{params['splat'][0]}/index"
 end
 
-post '/admin/*' do
+post '/admin/*' do # I think that this and the update method can be refactored.
   @link = params['splat'][0]
   @var = link_assoc[@link]
   logger.info "Creating a new " + @link
@@ -137,20 +137,29 @@ post '/admin/*' do
   end
 end
 
-put '/admin/*/:id' do
+put '/admin/*/:id' do # I think this can be refactored w/ create.
   @link = params['splat'][0]
   @var = link_assoc[@link]
-  logger.info "PUT - @link -> " + @link + ", id -> " + params['id']
   model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   if @var == "druh"
-    old_gen = model.gen
-    old_gen.delete(model)
-    new_gen = Gen.get(params['druh'].delete("gen_id").to_i)
-    new_gen.druhs << model
+    new_gen_id = params['druh'].delete("gen_id").to_i
+    unless new_gen_id == model.gen.id
+      old_gen = model.gen
+      old_gen.druhs.delete_at(old_gen.druhs.index(model)) # this sucks, vole.
+      new_gen = Gen.get(new_gen_id)
+      new_gen.druhs << model
+      new_gen.save # I should check if this fails.
+    end
   end
   if @var == "gen"
-    subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
-    subfam.gens << model
+    new_subfam_id = params['gen'].delete("subfam_id").to_i
+    unless new_subfam_id == model.subfam.id
+      old_subfam = model.subfam
+      old_subfam.gens.delete_at(old_subfam.gens.index(model)) # this sucks!
+      new_subfam = Subfam.get(new_subfam_id)
+      new_subfam.gens << model
+      new_subfam.save
+    end
   end
   
   unless model.update(params[@var])
