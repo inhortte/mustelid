@@ -100,48 +100,72 @@ get '/admin/*/new' do
 end
 
 get '/admin/*/:id' do
-  var = link_assoc[params['splat'][0]]
-  eval("@#{var} = #{var.capitalize}.first(params['id'])")
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  logger.info "Going to edit page - @link -> " + @link + ", @var -> " + @var
+  @model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   haml :"admin/#{params['splat'][0]}/edit"
 end
 
 get '/admin/*' do
-  var = link_assoc[params['splat'][0]]
-  eval("@#{var}s = #{var.capitalize}.all")
+  @var = link_assoc[params['splat'][0]]
+  eval("@#{@var}s = #{@var.capitalize}.all")
   haml :"admin/#{params['splat'][0]}/index"
 end
 
 post '/admin/*' do
-  link = params['splat'][0]
-  var = link_assoc[link]
-  model = Object::const_get(var.capitalize).new
-  if var == "druh"
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  logger.info "Creating a new " + @link
+  model = Object::const_get(@var.capitalize).new
+  if @var == "druh"
     gen = Gen.get(params['druh'].delete("gen_id").to_i)
     gen.druhs << model
   end
-  if var == "gen"
+  if @var == "gen"
     subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
     subfam.gens << model
   end
 
-  model.attributes = params[var]
+  model.attributes = params[@var]
   unless model.save
     flash[:notice] = unroll(model.errors)
-    redirect "/admin/#{link}/new"
+    redirect "/admin/#{@link}/new"
   else
     flash[:notice] = "Created!"
-    redirect "/admin/#{link}"
+    redirect "/admin/#{@link}"
+  end
+end
+
+put '/admin/*/:id' do
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  model = Object::const_get(@var.capitalize).get(params['id'].to_i)
+  if @var == "druh"
+    gen = Gen.get(params['druh'].delete("gen_id").to_i)
+    gen.druhs << model
+  end
+  if @var == "gen"
+    subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
+    subfam.gens << model
+  end
+  
+  unless model.update(params[@var])
+    flash[:notice] = unroll(model.errors)
+    redirect "/admin/#{@link}/#{params['id']}"
+  else
+    flash[:notice] = "Updated!"
+    redirect "admin/#{@link}"
   end
 end
 
 delete '/admin/*/:id' do
-  link = params['splat'][0]
-  var = link_assoc[link]
-  logger.info "delete ... link: #{link}  var: #{var}  id: #{params['id']}"
-  deleted = Object::const_get(var.capitalize).get(params['id'].to_i).destroy
-#  eval("deleted = #{var.capitalize}.first(params['id']).destroy")
+  @link = params['splat'][0]
+  @var = link_assoc[link]
+#  logger.info "delete ... link: #{@link}  var: #{@var}  id: #{params['id']}"
+  deleted = Object::const_get(@var.capitalize).get(params['id'].to_i).destroy
   flash[:notice] = deleted ? "Deleted!" : "Deletion failed."
-  redirect "/admin/#{link}"
+  redirect "/admin/#{@link}"
 end
 
 # Ajax routes

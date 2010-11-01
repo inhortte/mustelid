@@ -14,9 +14,16 @@ $(document).ready(function() {
     });
 
     // Admin form submits.
-    // First, for new entries.
+    // First, for new entries and entries being edited.
     $("#admin_button").click(function() {
-	var prefix = link_assoc[$("#admin_form").attr("action").split("/").pop()];
+	var path = $("#admin_form").attr("action").split("/");
+	// In case we are editing instead of creating a new model,
+	// the path will be /admin/prefix/id, and 'id' needs to be expunged.
+	if(path.length == 4) {
+	    path.pop();
+	}
+	var prefix = link_assoc[path.pop()];
+	alert("prefix: " + prefix);
 	if(prefix == "gen") {
 	    $("#" + prefix + "_subfam_id").val($("#subfam_select").val());
 	}
@@ -37,7 +44,7 @@ $(document).ready(function() {
     });
     // Now, for the edit and delete links.
     $("form > a[id^='edit'],form > a[id^='delete']").click(function() {
-	alert($(this).parent().attr("action"));
+	// alert($(this).parent().attr("action"));
 	$(this).parent().submit();
     });
 });

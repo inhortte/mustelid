@@ -1,0 +1,13 @@
+%h3
+  Update Species
+
+%form{:id => 'gen_form', :method => 'post'}
+  Subfamily:
+  %span#subfam
+    %select{:id => 'subfam_select', :name => 'subfam_select'}
+      = options_for_select(@model.gen.subfam.id, get_subfamilies)
+  Genus:
+  %span#gen
+    = haml_partial "partials/_genus", :locals => { :subfam_id => @model.gen.subfam.id, :gen_id => @model.gen.id }
+
+= haml_partial "admin/partials/_new_edit", :locals => { :link => @link, :var => @var, :model => @model }
