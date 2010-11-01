@@ -1,0 +1,9 @@
+%h3
+  Update Genus
+
+%p
+  Subfamily:
+  %select{:id => 'subfam_select', :name => 'subfam_select'}
+    = options_for_select(@model.subfam.id, get_subfamilies)
+
+= haml_partial :"admin/partials/_new_edit", :locals => { :link => @link, :var => @var, :model => @model }

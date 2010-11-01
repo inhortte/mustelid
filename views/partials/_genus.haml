@@ -1,2 +1,2 @@
 %select{:id => 'gen_select', :name => 'gen_select'}
-  = options_for_select(1, get_genuses(subfam))
+  = options_for_select(gen_id.nil? ? 1 : gen_id, get_genuses(subfam_id))

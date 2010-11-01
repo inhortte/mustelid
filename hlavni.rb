@@ -52,7 +52,7 @@ class Gen
   property :updated_at, DateTime
 
   has n, :druhs
-  belongs_to :subfam
+  belongs_to :subfam, :required => false
 end
 
 class Druh # Species (in Czech, since 'Spec' is not good)
@@ -66,7 +66,7 @@ class Druh # Species (in Czech, since 'Spec' is not good)
   property :updated_at, DateTime
 
   has n, :druh_imgs
-  belongs_to :gen
+  belongs_to :gen, :required => false
 end
 
 class DruhImg
@@ -100,48 +100,84 @@ get '/admin/*/new' do
 end
 
 get '/admin/*/:id' do
-  var = link_assoc[params['splat'][0]]
-  eval("@#{var} = #{var.capitalize}.first(params['id'])")
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  logger.info "Going to edit page - @link -> " + @link + ", params -> " + params['id']
+  @model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   haml :"admin/#{params['splat'][0]}/edit"
 end
 
 get '/admin/*' do
-  var = link_assoc[params['splat'][0]]
-  eval("@#{var}s = #{var.capitalize}.all")
+  @var = link_assoc[params['splat'][0]]
+  eval("@#{@var}s = #{@var.capitalize}.all")
   haml :"admin/#{params['splat'][0]}/index"
 end
 
-post '/admin/*' do
-  link = params['splat'][0]
-  var = link_assoc[link]
-  model = Object::const_get(var.capitalize).new
-  if var == "druh"
+post '/admin/*' do # I think that this and the update method can be refactored.
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  logger.info "Creating a new " + @link
+  model = Object::const_get(@var.capitalize).new
+  if @var == "druh"
     gen = Gen.get(params['druh'].delete("gen_id").to_i)
     gen.druhs << model
   end
-  if var == "gen"
+  if @var == "gen"
     subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
     subfam.gens << model
   end
 
-  model.attributes = params[var]
+  model.attributes = params[@var]
   unless model.save
     flash[:notice] = unroll(model.errors)
-    redirect "/admin/#{link}/new"
+    redirect "/admin/#{@link}/new"
   else
     flash[:notice] = "Created!"
-    redirect "/admin/#{link}"
+    redirect "/admin/#{@link}"
+  end
+end
+
+put '/admin/*/:id' do # I think this can be refactored w/ create.
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  model = Object::const_get(@var.capitalize).get(params['id'].to_i)
+  if @var == "druh"
+    new_gen_id = params['druh'].delete("gen_id").to_i
+    unless new_gen_id == model.gen.id
+      old_gen = model.gen
+      old_gen.druhs.delete_at(old_gen.druhs.index(model)) # this sucks, vole.
+      new_gen = Gen.get(new_gen_id)
+      new_gen.druhs << model
+      new_gen.save # I should check if this fails.
+    end
+  end
+  if @var == "gen"
+    new_subfam_id = params['gen'].delete("subfam_id").to_i
+    unless new_subfam_id == model.subfam.id
+      old_subfam = model.subfam
+      old_subfam.gens.delete_at(old_subfam.gens.index(model)) # this sucks!
+      new_subfam = Subfam.get(new_subfam_id)
+      new_subfam.gens << model
+      new_subfam.save
+    end
+  end
+  
+  unless model.update(params[@var])
+    flash[:notice] = unroll(model.errors)
+    redirect "/admin/#{@link}/#{params['id']}"
+  else
+    flash[:notice] = "Updated!"
+    redirect "/admin/#{@link}"
   end
 end
 
 delete '/admin/*/:id' do
-  link = params['splat'][0]
-  var = link_assoc[link]
-  logger.info "delete ... link: #{link}  var: #{var}  id: #{params['id']}"
-  deleted = Object::const_get(var.capitalize).get(params['id'].to_i).destroy
-#  eval("deleted = #{var.capitalize}.first(params['id']).destroy")
+  @link = params['splat'][0]
+  @var = link_assoc[link]
+#  logger.info "delete ... link: #{@link}  var: #{@var}  id: #{params['id']}"
+  deleted = Object::const_get(@var.capitalize).get(params['id'].to_i).destroy
   flash[:notice] = deleted ? "Deleted!" : "Deletion failed."
-  redirect "/admin/#{link}"
+  redirect "/admin/#{@link}"
 end
 
 # Ajax routes
