@@ -23,7 +23,6 @@ $(document).ready(function() {
 	    path.pop();
 	}
 	var prefix = link_assoc[path.pop()];
-	alert("prefix: " + prefix);
 	if(prefix == "gen") {
 	    $("#" + prefix + "_subfam_id").val($("#subfam_select").val());
 	}

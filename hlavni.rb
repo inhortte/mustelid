@@ -102,7 +102,7 @@ end
 get '/admin/*/:id' do
   @link = params['splat'][0]
   @var = link_assoc[@link]
-  logger.info "Going to edit page - @link -> " + @link + ", @var -> " + @var
+  logger.info "Going to edit page - @link -> " + @link + ", params -> " + params['id']
   @model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   haml :"admin/#{params['splat'][0]}/edit"
 end
@@ -140,10 +140,13 @@ end
 put '/admin/*/:id' do
   @link = params['splat'][0]
   @var = link_assoc[@link]
+  logger.info "PUT - @link -> " + @link + ", id -> " + params['id']
   model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   if @var == "druh"
-    gen = Gen.get(params['druh'].delete("gen_id").to_i)
-    gen.druhs << model
+    old_gen = model.gen
+    old_gen.delete(model)
+    new_gen = Gen.get(params['druh'].delete("gen_id").to_i)
+    new_gen.druhs << model
   end
   if @var == "gen"
     subfam = Subfam.get(params['gen'].delete("subfam_id").to_i)
@@ -155,7 +158,7 @@ put '/admin/*/:id' do
     redirect "/admin/#{@link}/#{params['id']}"
   else
     flash[:notice] = "Updated!"
-    redirect "admin/#{@link}"
+    redirect "/admin/#{@link}"
   end
 end
 
