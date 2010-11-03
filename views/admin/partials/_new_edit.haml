@@ -6,6 +6,7 @@
       %input{:type => "hidden", :id => "#{var}_subfam_id", :name => "#{var}[subfam_id]"}
     - if var == "druh"
       %input{:type => "hidden", :id => "#{var}_gen_id", :name => "#{var}[gen_id]"}
+      %input{:type => "hidden", :id => "#{var}_common_names", :name => "#{var}[common_names]"}
     %label{:for => "#{var}_name"}
       Name:
     %input{:type => "text", :size => 20, :id => "#{var}_name", :name => "#{var}[name]", :value => "#{!model.nil? ? model.name : ''}"}

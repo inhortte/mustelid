@@ -32,6 +32,7 @@ $(document).ready(function() {
 	}
 	if(prefix == "druh") {
 	    $("#" + prefix + "_gen_id").val($("#gen_select").val());
+	    $("#" + prefix + "_common_names").val($("#common").val());
 	}
 	$("#admin_form").submit();
     });

@@ -1,7 +1,7 @@
 %h3
   New Species
 
-%form{:id => 'gen_form', :method => 'post'}
+%p
   Subfamily:
   %span#subfam
     %select{:id => 'subfam_select', :name => 'subfam_select'}
@@ -11,4 +11,9 @@
     = haml_partial "partials/_genus", :locals => { :subfam_id => 1, :gen_id => nil }
 
 = haml_partial "admin/partials/_new_edit", :locals => { :link => @link, :var => @var, :model => nil }
+
+%p
+  Common Names(comma separated list):
+  %br
+  %textarea#common{:cols => 40, :rows => 3}
 

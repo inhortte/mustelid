@@ -66,6 +66,7 @@ class Druh # Species (in Czech, since 'Spec' is not good)
   property :updated_at, DateTime
 
   has n, :druh_imgs
+  has n, :druh_common_names, :through => Resource
   belongs_to :gen, :required => false
 end
 
@@ -77,7 +78,18 @@ class DruhImg
   property :created_at, DateTime
   property :updated_at, DateTime
 
-  belongs_to :druh
+  belongs_to :druh, :required => false
+end
+
+class DruhCommonName
+  include DataMapper::Resource
+
+  property :id, Serial
+  property :name, String, :required => true
+  property :created_at, DateTime
+  property :updated_at, DateTime
+
+  has n, :druhs, :through => Resource
 end
 
 # Filters
@@ -108,7 +120,18 @@ get '/admin/*/:id' do
 end
 
 get '/admin/*' do
-  @var = link_assoc[params['splat'][0]]
+  @link = params['splat'][0]
+  @var = link_assoc[@link]
+  if Subfam.count == 0
+    flash[:notice] = "There are no subfamilies."
+    redirect "/admin/subfamily/new"
+  elsif Gen.count == 0 && (@var == "gen" || @var == "druh")
+    flash[:notice] = "There are no genuses."
+    redirect "/admin/genus/new"
+  elsif Druh.count == 0 && (@var == "druh")
+    flash[:notice] = "There are no species."
+    redirect "/admin/species/new"
+  end
   eval("@#{@var}s = #{@var.capitalize}.all")
   haml :"admin/#{params['splat'][0]}/index"
 end
@@ -116,10 +139,10 @@ end
 post '/admin/*' do # I think that this and the update method can be refactored.
   @link = params['splat'][0]
   @var = link_assoc[@link]
-  logger.info "Creating a new " + @link
   model = Object::const_get(@var.capitalize).new
   if @var == "druh"
     gen = Gen.get(params['druh'].delete("gen_id").to_i)
+    common_names = params['druh'].delete("common_names")
     gen.druhs << model
   end
   if @var == "gen"
@@ -132,6 +155,9 @@ post '/admin/*' do # I think that this and the update method can be refactored.
     flash[:notice] = unroll(model.errors)
     redirect "/admin/#{@link}/new"
   else
+    if @var == "druh"
+      set_common_names(model, common_names)
+    end
     flash[:notice] = "Created!"
     redirect "/admin/#{@link}"
   end
@@ -142,6 +168,7 @@ put '/admin/*/:id' do # I think this can be refactored w/ create.
   @var = link_assoc[@link]
   model = Object::const_get(@var.capitalize).get(params['id'].to_i)
   if @var == "druh"
+    common_names = params['druh'].delete("common_names")
     new_gen_id = params['druh'].delete("gen_id").to_i
     unless new_gen_id == model.gen.id
       old_gen = model.gen
@@ -166,6 +193,9 @@ put '/admin/*/:id' do # I think this can be refactored w/ create.
     flash[:notice] = unroll(model.errors)
     redirect "/admin/#{@link}/#{params['id']}"
   else
+    if @var == "druh"
+      set_common_names(model, common_names)
+    end
     flash[:notice] = "Updated!"
     redirect "/admin/#{@link}"
   end
@@ -173,7 +203,7 @@ end
 
 delete '/admin/*/:id' do
   @link = params['splat'][0]
-  @var = link_assoc[link]
+  @var = link_assoc[@link]
 #  logger.info "delete ... link: #{@link}  var: #{@var}  id: #{params['id']}"
   deleted = Object::const_get(@var.capitalize).get(params['id'].to_i).destroy
   flash[:notice] = deleted ? "Deleted!" : "Deletion failed."
@@ -217,6 +247,23 @@ helpers do
     else
       haml "#{name}".to_sym, options.merge(:layout => false)
     end
+  end
+end
+
+# the common names thang.
+helpers do
+  def set_common_names(model, common_names)
+    model.druh_common_names.clear
+    common_names.split(/,/).each do |cn|
+      logger.info "Common name: " + cn
+      cn.strip!
+      cn.downcase!
+      cn_object = DruhCommonName.first(:name => cn) || DruhCommonName.create(:name => cn)
+      unless model.druh_common_names.include? cn_object
+        model.druh_common_names << cn_object
+      end
+    end
+    model.save
   end
 end
 
