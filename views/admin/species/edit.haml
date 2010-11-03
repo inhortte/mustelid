@@ -11,3 +11,9 @@
     = haml_partial "partials/_genus", :locals => { :subfam_id => @model.gen.subfam.id, :gen_id => @model.gen.id }
 
 = haml_partial "admin/partials/_new_edit", :locals => { :link => @link, :var => @var, :model => @model }
+
+%p
+  Common Names(comma separated list)
+  %br
+  %textarea#common{:cols => 40, :rows => 3}
+    = @model.druh_common_names.map { |cn| cn.name }.join(", ")
